@@ -11,7 +11,11 @@ using namespace std;
 
 int main(int argc, char* argv[])
 {
-    if (argc<4) cout<<"Usage: ./calrect n w h\n";
+    if (argc<4) {
+        cout<<"Usage: ./calrect n w h\n";
+        return 0;
+    }
+
     int numBoards = atoi(argv[1]);
     int board_w = atoi(argv[2]);
     int board_h = atoi(argv[3]);
@@ -22,16 +26,19 @@ int main(int argc, char* argv[])
     vector<vector<Point3f> > object_points;
     vector<vector<Point2f> > imagePoints1, imagePoints2;
     vector<Point2f> corners1, corners2;
-
     vector<Point3f> obj;
+    
     for (int j=0; j<board_n; j++)
-    {
-        obj.push_back(Point3f(j/board_w, j%board_w, 0.0f));
-    }
-
+       obj.push_back(Point3f(j/board_w, j%board_w, 0.0f));
+ 
     Mat img1, img2, gray1, gray2;
-    VideoCapture cap1(1);// = VideoCapture(1);
-    VideoCapture cap2(2); // = VideoCapture(2);
+    VideoCapture cap1(1);
+    VideoCapture cap2(2); 
+
+    if (!cap1.isOpened() || !cap2.isOpened()) {
+        cout<<"Cameras are not connected properly..\n";
+        return -1;
+    } 
 
     cap1.set(CV_CAP_PROP_FRAME_WIDTH,640);
     cap1.set(CV_CAP_PROP_FRAME_HEIGHT,480);
@@ -41,26 +48,21 @@ int main(int argc, char* argv[])
     int success = 0, k = 0;
     bool found1 = false, found2 = false;
 
-    while (success < numBoards)
-    {
+    while (success < numBoards) {
         cap1 >> img1;
         cap2 >> img2;
-        //resize(img1, img1, Size(320, 280));
-        //resize(img2, img2, Size(320, 280));
         cvtColor(img1, gray1, CV_BGR2GRAY);
         cvtColor(img2, gray2, CV_BGR2GRAY);
 
         found1 = findChessboardCorners(img1, board_sz, corners1, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_NORMALIZE_IMAGE | CALIB_CB_FAST_CHECK | CV_CALIB_CB_FILTER_QUADS);
         found2 = findChessboardCorners(img2, board_sz, corners2, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_NORMALIZE_IMAGE | CALIB_CB_FAST_CHECK | CV_CALIB_CB_FILTER_QUADS);
 
-        if (found1)
-        {
+        if (found1) {
             cornerSubPix(gray1, corners1, Size(11, 11), Size(-1, -1), TermCriteria(CV_TERMCRIT_EPS | CV_TERMCRIT_ITER, 30, 0.1));
             drawChessboardCorners(gray1, board_sz, corners1, found1);
         }
 
-        if (found2)
-        {
+        if (found2) {
             cornerSubPix(gray2, corners2, Size(11, 11), Size(-1, -1), TermCriteria(CV_TERMCRIT_EPS | CV_TERMCRIT_ITER, 30, 0.1));
             drawChessboardCorners(gray2, board_sz, corners2, found2);
         }
@@ -69,16 +71,13 @@ int main(int argc, char* argv[])
         imshow("image2", gray2);
 
         k = waitKey(10);
-        if (found1 && found2)
-        {
+        if (found1 && found2) 
             k = waitKey(0);
-        }
+        
         if (k == 27)
-        {
             break;
-        }
-        if (k == ' ' && found1 !=0 && found2 != 0)
-        {
+    
+        if (k == ' ' && found1 !=0 && found2 != 0) {        
             imagePoints1.push_back(corners1);
             imagePoints2.push_back(corners2);
             object_points.push_back(obj);
@@ -86,15 +85,15 @@ int main(int argc, char* argv[])
             success++;
 
             if (success >= numBoards)
-            {
                 break;
-            }
         }
     }
 
     destroyAllWindows();
 
-    //stereo calibration
+    //End of Chessboard pattern recognition
+    //Starting stereo calibration
+
     printf("Starting Calibration\n");
     Mat CM1 = Mat(3, 3, CV_64FC1);
     Mat CM2 = Mat(3, 3, CV_64FC1);
@@ -106,7 +105,7 @@ int main(int argc, char* argv[])
                     cvTermCriteria(CV_TERMCRIT_ITER+CV_TERMCRIT_EPS, 100, 1e-5), 
                     CV_CALIB_SAME_FOCAL_LENGTH | CV_CALIB_ZERO_TANGENT_DIST);
 
-    FileStorage fs1("mystereocalib.yml", FileStorage::WRITE);
+    FileStorage fs1("stereocalib.xml", FileStorage::WRITE);
     fs1 << "CM1" << CM1;
     fs1 << "CM2" << CM2;
     fs1 << "D1" << D1;
@@ -118,7 +117,9 @@ int main(int argc, char* argv[])
 
     printf("Done Calibration\n");
 
-    //stereo rectification
+    //End of Calibration
+    //starting Stereo rectification
+
     printf("Starting Rectification\n");
 
     Mat R1, R2, P1, P2, Q;
@@ -131,7 +132,9 @@ int main(int argc, char* argv[])
 
     printf("Done Rectification\n");
 
-    //undistortion 
+    //End of rectification
+    //Starting Undistortion 
+
     printf("Applying Undistort\n");
 
     Mat map1x, map1y, map2x, map2y;
@@ -142,6 +145,9 @@ int main(int argc, char* argv[])
 
     printf("Undistort complete\n");
 
+    //End of Undistortion
+    //Starting stereo correspondance search
+
     namedWindow("d-map",CV_WINDOW_AUTOSIZE);
 
     StereoBM BMState; 
@@ -151,32 +157,30 @@ int main(int argc, char* argv[])
     int prefilsztracker = 5;
     int mindisptracker = 0;
     int texthtracker = 20;
-    int uRatio = 0;//5;
-    int spWinSz = 0;//5;
-    int spRange = 0;//5;
+    int uRatio = 0;
+    int spWinSz = 0;
+    int spRange = 0;
 
-    BMState.state->preFilterSize=85;//41;
-    BMState.state->preFilterCap=47;//31;
-    BMState.state->SADWindowSize=30;//41; 
-    BMState.state->minDisparity=3;//64; 
-    BMState.state->numberOfDisparities=64;//128; 
-    BMState.state->textureThreshold=18;//10; 
-    BMState.state->uniquenessRatio=0;//15;
+    BMState.state->preFilterSize=85;
+    BMState.state->preFilterCap=47;
+    BMState.state->SADWindowSize=30; 
+    BMState.state->minDisparity=3; 
+    BMState.state->numberOfDisparities=64; 
+    BMState.state->textureThreshold=18; 
+    BMState.state->uniquenessRatio=0;
     BMState.state->speckleWindowSize = 0;
     BMState.state->speckleRange = 0;
 
-    //int nod = 12;
     StereoSGBM sgbm;
-    sgbm.SADWindowSize = 41; //5;
-    sgbm.numberOfDisparities = 128;//16*nod;
-    sgbm.preFilterCap = 31; //4;
-    sgbm.minDisparity = -64; //0;  //-64, not added to trackbar
-    sgbm.uniquenessRatio = 15;//1;
+    sgbm.SADWindowSize = 41; 
+    sgbm.numberOfDisparities = 128;
+    sgbm.preFilterCap = 31; 
+    sgbm.minDisparity = -64; 
+    sgbm.uniquenessRatio = 15;
     sgbm.speckleWindowSize = 150;
     sgbm.speckleRange = 2;
     sgbm.disp12MaxDiff = 10;
-    sgbm.fullDP = false;    //not added to trackbar
-    sgbm.P1 = 600;
+    sgbm.fullDP = false;    
     sgbm.P2 = 2400;
 
     createTrackbar("SADWindowSize","d-map",&sadwintracker,100);
@@ -201,15 +205,15 @@ int main(int argc, char* argv[])
         cvtColor(imgU2,img2,CV_BGR2GRAY);
 
         if (prefilsztracker<5) prefilsztracker=5;
-        BMState.state->preFilterSize=(prefilsztracker%2)?prefilsztracker:prefilsztracker-1;//41;
+        BMState.state->preFilterSize=(prefilsztracker%2)?prefilsztracker:prefilsztracker-1;
         if (prefilcaptracker==0) prefilcaptracker=1;
-        BMState.state->preFilterCap=prefilcaptracker;//31;
+        BMState.state->preFilterCap=prefilcaptracker;
         if (sadwintracker<5) sadwintracker = 5;
-        BMState.state->SADWindowSize=(sadwintracker%2)?sadwintracker:sadwintracker-1;//41; 
-        BMState.state->minDisparity=-mindisptracker;//-64;
+        BMState.state->SADWindowSize=(sadwintracker%2)?sadwintracker:sadwintracker-1; 
+        BMState.state->minDisparity=-mindisptracker;
         if (nod ==0) nod = 1; 
-        BMState.state->numberOfDisparities=16*nod;//128; 
-        BMState.state->textureThreshold=texthtracker;//10; 
+        BMState.state->numberOfDisparities=16*nod; 
+        BMState.state->textureThreshold=texthtracker;
         BMState.state->uniquenessRatio=uRatio;
         BMState.state->speckleWindowSize=spWinSz;
         BMState.state->speckleRange=spRange;
@@ -227,15 +231,28 @@ int main(int argc, char* argv[])
         */
         
         BMState(img1,img2,disp);
-        Mat _3dpoints;
-        reprojectImageTo3D(disp,_3dpoints,Q,true);
         normalize(disp, disp8, 0, 255, CV_MINMAX, CV_8U);
         imshow("Frame 1",img1);
         imshow("Frame 2",img2);
         imshow("d-map",disp8);
-        //imshow("3d-points",_3dpoints);
         if (waitKey(33)==27) break;
 }
     destroyAllWindows();
-    return(0);
+
+    //debugging
+    //for displaying disparity map
+
+    unsigned char *disparity = (unsigned char*)(disp8.data);
+
+    int i,j,r,g,b;
+    for(int i = 0;i < disp8.cols;i++){
+        for(int j = 0;j < disp8.rows;j++){
+            b = disparity[disp8.cols * j + i ] ;
+          //  cout<<b<<" ";
+        }
+        //cout<<"\n";
+    }
+    //debugging
+
+    return 0;
 }
