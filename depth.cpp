@@ -13,7 +13,9 @@
 using namespace cv;
 using namespace std;
 
-//Function creates a PCL visualizer, sets the point cloud to view and returns a pointer
+//Function creates a PCL visualizer
+//sets the point cloud to view and returns a pointer
+
 boost::shared_ptr<pcl::visualization::PCLVisualizer> createVisualizer (pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr cloud) {
     boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer (new pcl::visualization::PCLVisualizer ("3D Viewer"));
     viewer->setBackgroundColor (0, 0, 0);
@@ -133,6 +135,7 @@ int main(int argc, char* argv[])
     printf("Done Calibration\n");
 
     //End of Calibration
+    //Calibration parameters are stored in stereocalib.xml
     //starting Stereo rectification
 
     printf("Starting Rectification\n");
@@ -148,9 +151,10 @@ int main(int argc, char* argv[])
     printf("Done Rectification\n");
 
     //End of rectification
+    //R_rect and projection matrices are stored in stereocalib.xml
     //Starting Undistortion 
 
-    printf("Applying Undistort\n");
+    printf("Applying Undistortion\n");
 
     Mat map1x, map1y, map2x, map2y;
     Mat imgU1, imgU2, disp, disp8;
@@ -158,9 +162,10 @@ int main(int argc, char* argv[])
     initUndistortRectifyMap(CM1, D1, R1, P1, img1.size(), CV_32FC1, map1x, map1y);
     initUndistortRectifyMap(CM2, D2, R2, P2, img2.size(), CV_32FC1, map2x, map2y);
 
-    printf("Undistort complete\n");
+    printf("Undistortion complete\n");
 
     //End of Undistortion
+    //Image-Image mapping functions are created
     //Starting stereo correspondance search
 
     namedWindow("d-map",CV_WINDOW_AUTOSIZE);
@@ -185,18 +190,6 @@ int main(int argc, char* argv[])
     BMState.state->uniquenessRatio=0;
     BMState.state->speckleWindowSize = 0;
     BMState.state->speckleRange = 0;
-
-    StereoSGBM sgbm;
-    sgbm.SADWindowSize = 41; 
-    sgbm.numberOfDisparities = 128;
-    sgbm.preFilterCap = 31; 
-    sgbm.minDisparity = -64; 
-    sgbm.uniquenessRatio = 15;
-    sgbm.speckleWindowSize = 150;
-    sgbm.speckleRange = 2;
-    sgbm.disp12MaxDiff = 10;
-    sgbm.fullDP = false;    
-    sgbm.P2 = 2400;
 
     createTrackbar("SADWindowSize","d-map",&sadwintracker,100);
     createTrackbar("numberOfDisparities","d-map",&nod,20);
@@ -251,13 +244,15 @@ int main(int argc, char* argv[])
         imshow("Frame 2",img2);
         imshow("d-map",disp8);
         if (waitKey(33)==27) break;
-}
+    }
     destroyAllWindows();
 
     //debugging
     //for displaying disparity map
     //and 3d reconstruction
 
+    imwrite("rgb.jpg",img1);
+    imwrite("disp.jpg",disp8);
     //extract Q parameters
     double _cx, _cy, f, _tx_inv, _cx_cx_tx_inv;  //-cx, -cy, f, -1/Tx, (cx - cx')/Tx
     _cx = -296.15;//Q.at<double>(0,3); 
@@ -279,11 +274,20 @@ int main(int argc, char* argv[])
     double px, py, pz;
     unsigned char pr,pg, pb;
 
+    //debugging
+    //need to be removed
+    /*Mat disp_ptr;
+    img1 = imread("rgb-image.ppm");
+    disp_ptr = imread("disparity-image.ppm",CV_LOAD_IMAGE_GRAYSCALE);
+    cout<<"images loaded..\n";*/
+    //debugging
+
     for (int i=0;i<img1.rows;i++) {
-        unsigned char* rgb = img1.ptr<unsigned char>(i);
-        unsigned char* disparity = disp8.ptr<unsigned char>(i);
+        uchar* rgb = img1.ptr<uchar>(i);
+        uchar* disparity = disp8.ptr<uchar>(i); //disp8
         for (int j=0;j<img1.cols;j++) {
-            unsigned char d = disparity[j];
+            uchar d = disparity[j];
+            //cout<<"landmark\n";
             if (d==0) continue;
             double pw = -1.0*(double) (d)*_tx_inv + _cx_cx_tx_inv;
             px = (double) j + _cx;
@@ -307,6 +311,7 @@ int main(int argc, char* argv[])
               (uint32_t) pg << 8 | (uint32_t)pb);
             point.rgb = *reinterpret_cast<float*>(&_rgb);
             point_cloud_ptr->points.push_back (point);
+        
         }
     }
     point_cloud_ptr->width = (int) point_cloud_ptr->points.size();
