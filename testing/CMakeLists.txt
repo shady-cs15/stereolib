@@ -1,0 +1,13 @@
+cmake_minimum_required(VERSION 2.8)
+project(stereotest)
+find_package(OpenCV REQUIRED)
+find_package(PCL 1.2 REQUIRED)
+include_directories(${PCL_INCLUDE_DIRS})
+link_directories(${PCL_LIBRARY_DIRS})
+add_definitions(${PCL_DEFINITIONS})
+#add_executable(stereo depth.cpp)
+#target_link_libraries(stereo ${OpenCV_LIBS} ${PCL_LIBRARIES})
+
+set(SOURCE main.cpp ./calib/stereocalib.cpp)
+add_executable(stereocalib ${SOURCE})
+target_link_libraries(stereocalib ${OpenCV_LIBS})

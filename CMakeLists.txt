@@ -1,10 +1,17 @@
-cmake_minimum_required(VERSION 2.8)
-project(stereotest)
-find_package(OpenCV REQUIRED)
-find_package(PCL 1.2 REQUIRED)
-include_directories(${PCL_INCLUDE_DIRS})
-link_directories(${PCL_LIBRARY_DIRS})
-add_definitions(${PCL_DEFINITIONS})
-add_executable(stereo depth.cpp)
-target_link_libraries(stereo ${OpenCV_LIBS} ${PCL_LIBRARIES})
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+PROJECT(StereoVisionLibrary)
 
+FIND_PACKAGE(OpenCV REQUIRED)
+
+IF(OpenCV_FOUND)
+	MESSAGE(STATUS "OpenCV Found")
+ELSE()
+	MESSAGE(FATAL_ERROR "OpenCV Not FOUND")
+ENDIF()
+
+SET(SOURCE main.cpp ./calib/stereocalib.cpp)
+
+IF(OpenCV_FOUND)
+	ADD_EXECUTABLE(stereocalib ${SOURCE})
+	TARGET_LINK_LIBRARIES(stereocalib ${OpenCV_LIBS})
+ENDIF()
