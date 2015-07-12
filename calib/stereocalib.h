@@ -9,7 +9,7 @@ class StereoCalibrator {
 	public:
 		StereoCalibrator(int num, int bw, int bh, float obj_scale);
 		int detectChessboardCorners(cv::Mat& img1, cv::Mat& img2);
-		void calibrate(bool update=false);
+		void calibrate();
 
 	private:
 		int num_boards;
@@ -17,7 +17,7 @@ class StereoCalibrator {
 		int b_height;
 		float ob_scale;
 		cv::Size b_size;
-		cv::Mat gray1, gray2;
+		cv::Mat img1, img2, gray1, gray2, M1, M2, D1, D2, R, T, E, F;
 		std::vector<std::vector<cv::Point3f> > objPts;
     	std::vector<std::vector<cv::Point2f> > imgPts1, imgPts2;
     	std::vector<cv::Point2f> corners1, corners2;
