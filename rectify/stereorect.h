@@ -11,5 +11,6 @@ public:
 private:
 	cv::Mat R1, R2, P1, P2, Q;
 	cv::Mat M1, M2, D1, D2, R, T;
+	cv::Mat map1x, map1y, map2x, map2y;
 	cv::Size img_sz;
 };

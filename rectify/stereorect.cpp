@@ -17,6 +17,11 @@ StereoRectifier::StereoRectifier(Size s) {
 
 void StereoRectifier::rectify() {
 	stereoRectify(M1, D1, M2, D2, img_sz, R, T, R1, R2, P1, P2, Q);
+    cout << "Stereorectification done..\n";
+    cout << "Generating maps..\n";
+    initUndistortRectifyMap(M1, D1, R1, P1, img_sz, CV_32FC1, map1x, map1y);
+    initUndistortRectifyMap(M2, D2, R2, P2, img_sz, CV_32FC1, map2x, map2y);
+    cout << "Maps generated..\n";
 	char c;
 	cout << "Want to add params to stereorect.xml ? (y/n): ";
 	cin >> c;
@@ -27,6 +32,10 @@ void StereoRectifier::rectify() {
     	fs2 << "P1" << P1;
     	fs2 << "P2" << P2;
     	fs2 << "Q" << Q;
+        fs2 << "map1x" << map1x;
+        fs2 << "map1y" << map1y;
+        fs2 << "map2x" << map2x;
+        fs2 << "map2y" << map2y;
     	fs2.release();
 	}
 }
