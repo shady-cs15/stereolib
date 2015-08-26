@@ -58,6 +58,10 @@ void StereoCalibrator::calibrate() {
                     cv::TermCriteria(CV_TERMCRIT_ITER+CV_TERMCRIT_EPS, 100, 1e-5), 
                     CV_CALIB_SAME_FOCAL_LENGTH | CV_CALIB_ZERO_TANGENT_DIST);
 	std::cout << "STATUS: Calibration done ..\n";
+	//testing
+	//std::cout << "Image Points 1:\n";
+	//for (int k=0; k<imgPts1.size(); k++) std::cout<< imgPts1[k] << "\n";
+	//std::cout << "Image Points 2:\n" << imgPts2 << "\n";
 
 	char update = 'n';
 	std::cout << "Update stereocalib.xml? (y/n): ";
@@ -73,6 +77,54 @@ void StereoCalibrator::calibrate() {
     	fs1 << "E" << E;
     	fs1 << "F" << F;
 	}
-
+	std::cout << "VERBOSE: showing calibrated params..\n";
+	std::cout << "Camera Matrix 1 :\n" << M1 << std::endl;
+	std::cout << "Camera Matrix 2 :\n" << M2 << std::endl;
+	std::cout << "Distortion Matrix 1:\n" << D1 << std::endl;
+	std::cout << "Distortion Matrix 2:\n" << D2 << std::endl;
+	std::cout << "Rotation Matrix:\n" << R << std::endl;
+	std::cout << "Translation Vector:\n" << T << std::endl;
+	std::cout << "Essential Matrix:\n" << E << std::endl;
+	std::cout << "Fundamental Matrix:\n " << F << std::endl;
 	fs1.release();
 }
+
+//bug fix it. follow OpenCV text.
+/*void StereoCalibrator::check_quality() {
+	std::vector<cv::Point3f> l1, l2;
+	int n = num_boards*b_width*b_height;
+	std::cout << "imgPts1[0]\n" << imgPts1[0] << "\n";
+	std::vector<std::vector<cv::Point2f> > _imgPts1 = imgPts1, _imgPts2 = imgPts2;
+	cv::Mat i1(1, n, CV_32FC2, &_imgPts1[0]);
+	cv::Mat i2(1, n, CV_32FC2, &_imgPts2[0]);
+	//TODO- needs to be removed from here
+	cv::Mat R1, R2, P1, P2, Q;
+    cv::stereoRectify(M1, D1, M2, D2, img1.size(), R, T, R1, R2, P1, P2, Q);
+	/*std::vector<cv::Point2f> i1, i2;
+	int n = imgPts1.size();
+	for (int i = 0; i<n; i++) {
+		i1.push_back(cv::Point2f(imgPts1[i][0], imgPts1[i][1]));
+		i2.push_back(cv::Point2f(imgPts2[i][0], imgPts2[i][1]));
+	}*/
+	/*std::cout << "i1:\n" << i1 << "\n";
+	std::cout << "i1.size(): " << i1.size() << "\n";
+	cv::undistortPoints( i1, i1, M1, D1, R1, M1);
+	std::cout << "i1:\n" << i1 << "\n";
+	cv::undistortPoints( i2, i2, M2, D2, R2, M2);
+	cv::computeCorrespondEpilines( _imgPts1, 1, F, l1);
+	cv::computeCorrespondEpilines( _imgPts2, 2, F, l2);
+	double avg_err = 0;
+	std::cout << "imgPts1[0]\n" << imgPts1[0] << "\n"; //probably giving error
+	std::cout << "l1:\n" << l1 << "\n";
+	std::cout << "l1.size(): " << l1.size() << "\n";
+	for (int i = 0; i<2; i++) {
+		for (int j=0; j<54; j++) {
+			int k = i*54+j;
+			//if (l1[k]!=l1[k] || l2[k]!=l2[k]) continue; //if either is NaN continue;
+			/*double err = fabs(imgPts1[i][j].x*l2[k].x+imgPts1[i][j].x*l2[k].y+l2[k].z)
+						+fabs(imgPts2[i][j].x*l1[k].x+imgPts2[i][j].y*l1[k].y+l1[k].z);
+			avg_err += err;*/
+	/*	}
+	}
+	std::cout << "Average calibration error: " << avg_err/(num_boards*b_width*b_height);
+}*/

@@ -9,7 +9,7 @@ ELSE()
 	MESSAGE(FATAL_ERROR "OpenCV Not FOUND")
 ENDIF()
 
-SET(SOURCE main.cpp ./calib/stereocalib.cpp)
+SET(SOURCE main.cpp ./calib/stereocalib.cpp ./rectify/stereorect.cpp)
 
 IF(OpenCV_FOUND)
 	ADD_EXECUTABLE(stereocalib ${SOURCE})

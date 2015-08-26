@@ -10,6 +10,7 @@ class StereoCalibrator {
 		StereoCalibrator(int num, int bw, int bh, float obj_scale);
 		int detectChessboardCorners(cv::Mat& img1, cv::Mat& img2);
 		void calibrate();
+		//void check_quality();
 
 	private:
 		int num_boards;
