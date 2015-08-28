@@ -52,7 +52,6 @@ int StereoCalibrator::detectChessboardCorners(cv::Mat& img1, cv::Mat& img2) {
 
 void StereoCalibrator::calibrate() {
 	std::cout << "STATUS: Calibration started ..\n";
-	cv::FileStorage fs1("stereocalib.xml", cv::FileStorage::WRITE);
 	cv::stereoCalibrate(objPts, imgPts1, imgPts2, 
                     M1, D1, M2, D2, img1.size(), R, T, E, F,
                     cv::TermCriteria(CV_TERMCRIT_ITER+CV_TERMCRIT_EPS, 100, 1e-5), 
@@ -67,6 +66,7 @@ void StereoCalibrator::calibrate() {
 	std::cout << "Update stereocalib.xml? (y/n): ";
 	std::cin >> update;
 	if (update == 'y' || update == 'Y') {
+		cv::FileStorage fs1("stereocalib.xml", cv::FileStorage::WRITE);
 		std::cout << "STATUS: Updating stereocalib.xml..\n";
 		fs1 << "M1" << M1;
     	fs1 << "M2" << M2;
@@ -76,6 +76,7 @@ void StereoCalibrator::calibrate() {
     	fs1 << "T" << T;
     	fs1 << "E" << E;
     	fs1 << "F" << F;
+    	fs1.release();
 	}
 	std::cout << "VERBOSE: showing calibrated params..\n";
 	std::cout << "Camera Matrix 1 :\n" << M1 << std::endl;
@@ -86,7 +87,6 @@ void StereoCalibrator::calibrate() {
 	std::cout << "Translation Vector:\n" << T << std::endl;
 	std::cout << "Essential Matrix:\n" << E << std::endl;
 	std::cout << "Fundamental Matrix:\n " << F << std::endl;
-	fs1.release();
 }
 
 //bug fix it. follow OpenCV text.

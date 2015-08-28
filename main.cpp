@@ -1,8 +1,10 @@
 #include "./calib/stereocalib.h"
 #include "./rectify/stereorect.h"
 
-#define FRAME_H 480
-#define FRAME_W 640
+#define FRAME_H 240
+#define FRAME_W 320
+
+using namespace cv;
 
 int main(int argc, char** argv) {
     
@@ -22,8 +24,8 @@ int main(int argc, char** argv) {
 
 	StereoCalibrator* sc = new StereoCalibrator(nboards, rows, cols, bscale);
 
-	cv::VideoCapture cap1(1);
-	cv::VideoCapture cap2(2);
+	cv::VideoCapture cap1(2);
+	cv::VideoCapture cap2(1);
 	cv::Mat img1;
 	cv::Mat img2;
     cv::Size s;
@@ -62,5 +64,7 @@ int main(int argc, char** argv) {
     StereoRectifier* sr = new StereoRectifier(s);
     sr->rectify();
     delete sr;
+
+    
 	return 0;
 }

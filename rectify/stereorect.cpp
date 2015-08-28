@@ -39,3 +39,15 @@ void StereoRectifier::rectify() {
     	fs2.release();
 	}
 }
+
+void StereoRectifier::test(Mat& img1, Mat& img2, Mat& img_1, Mat& img_2) {
+    remap(img1, img_1, map1x, map1y, INTER_LINEAR, BORDER_CONSTANT, Scalar());
+    remap(img2, img_2, map2x, map2y, INTER_LINEAR, BORDER_CONSTANT, Scalar());
+    int rows = img1.rows, cols = img1.cols;
+    for (int i = 40; i<rows; i+=40) {
+        line(img1, Point(0, i), Point(cols, i), Scalar(0, 255, 0), 2);
+        line(img2, Point(0, i), Point(cols, i), Scalar(0, 255, 0), 2);
+        line(img_1, Point(0, i), Point(cols, i), Scalar(0, 255, 0), 2);
+        line(img_2, Point(0, i), Point(cols, i), Scalar(0, 255, 0), 2);
+    }
+}

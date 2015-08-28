@@ -8,6 +8,7 @@ class StereoRectifier {
 public:
 	StereoRectifier(cv::Size s);
 	void rectify();
+	void test(cv::Mat& img1, cv::Mat& img2, cv::Mat& img_1, cv::Mat& img_2);
 private:
 	cv::Mat R1, R2, P1, P2, Q;
 	cv::Mat M1, M2, D1, D2, R, T;

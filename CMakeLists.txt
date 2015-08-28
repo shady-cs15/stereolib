@@ -10,8 +10,11 @@ ELSE()
 ENDIF()
 
 SET(SOURCE main.cpp ./calib/stereocalib.cpp ./rectify/stereorect.cpp)
+SET(SOURCE_TEST main_test.cpp)
 
 IF(OpenCV_FOUND)
 	ADD_EXECUTABLE(stereocalib ${SOURCE})
 	TARGET_LINK_LIBRARIES(stereocalib ${OpenCV_LIBS})
+	ADD_EXECUTABLE(stereotest ${SOURCE_TEST})
+	TARGET_LINK_LIBRARIES(stereotest ${OpenCV_LIBS})
 ENDIF()
