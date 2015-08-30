@@ -33,7 +33,7 @@ int main(int argc, char** argv) {
 	fs.release();
 
     while (1) {
-        cap1 >> img2; cap2 >> img1;
+        cap1 >> img1; cap2 >> img2;
         remap(img1, img_1, map1x, map1y, INTER_LINEAR, BORDER_CONSTANT, Scalar());
     	remap(img2, img_2, map2x, map2y, INTER_LINEAR, BORDER_CONSTANT, Scalar());
     	int rows = img1.rows, cols = img1.cols;
