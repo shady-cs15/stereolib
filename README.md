@@ -36,3 +36,11 @@ $ make -j2
 <b>Running Block Matcher for disparity maps: </b>
 ./stereomatch
 <br>
+
+#Examples 
+Following are examples of disparity maps generated from stereo views
+<br>
+<img src="http://jderobot.org/store/chakraborty/uploads/images/disp.png" height=87 width=230/>
+<br>
+<img src="http://jderobot.org/store/chakraborty/uploads/images/disp2.png" height=87 width=230/>
+<br>
