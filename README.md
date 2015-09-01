@@ -40,7 +40,7 @@ $ make -j2
 #Examples 
 Following are examples of disparity maps generated from stereo views
 <br>
-<img src="http://jderobot.org/store/chakraborty/uploads/images/disp.png" height=87 width=230/>
+<img src="http://jderobot.org/store/chakraborty/uploads/images/disp.png"/>
 <br>
-<img src="http://jderobot.org/store/chakraborty/uploads/images/disp2.png" height=87 width=230/>
+<img src="http://jderobot.org/store/chakraborty/uploads/images/disp2.png" />
 <br>
