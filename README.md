@@ -7,6 +7,8 @@ Depth reconstruction using stereo vision
 <br>
 <b>OpenCV</b> 
 <br>
+<b>PCL</b> (Optional: for stereomatch)
+<br>
 <b>CMake</b>
 
 # Building
