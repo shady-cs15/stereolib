@@ -1,4 +1,7 @@
 #include "./corres/stereomatch.h"
+#include <pcl/io/io.h>
+#include <pcl/visualization/cloud_viewer.h>
+#include <boost/thread/thread.hpp>
 
 #define FRAME_H 240
 #define FRAME_W 320
@@ -9,6 +12,16 @@ Mat disp, img1, img2;
 StereoMatcher* sm;
 
 static void onMouse(int event, int x, int y, int flags, void*);
+
+boost::shared_ptr<pcl::visualization::PCLVisualizer> createVisualizer (pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr cloud) {
+    boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer (new pcl::visualization::PCLVisualizer ("3D Viewer"));
+    viewer->setBackgroundColor (255, 255, 255);
+    pcl::visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGB> rgb(cloud);
+    viewer->addPointCloud<pcl::PointXYZRGB> (cloud, rgb, "reconstruction");
+    viewer->addCoordinateSystem ( 1.0 );
+    viewer->initCameraParameters ();
+    return viewer;
+}
 
 int main(int argc, char** argv) {
 	cv::VideoCapture cap1(1);
@@ -28,16 +41,26 @@ int main(int argc, char** argv) {
 	setMouseCallback("disparity", onMouse);
 	sm = new StereoMatcher();
 
+	pcl::PointCloud<pcl::PointXYZRGB>::Ptr point_cloud_ptr (new pcl::PointCloud<pcl::PointXYZRGB>);
+	boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer;
+    	viewer = createVisualizer( point_cloud_ptr );
+
 	while (1) {
 		cap1 >> img1;
 		cap2 >> img2;
 		disp = sm -> getDisparity(img1, img2);
-		dilate(disp, disp, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)));
-		
-		sm -> reproject(disp, img1);
+		//dilate(disp, disp, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)));
+
+		sm -> reproject(disp, img1, point_cloud_ptr);
+		cout << "PointCloud size: "<< point_cloud_ptr->size()<<"\n";
 		imshow("left", img1);
 		imshow("right", img2);
 		imshow("disparity", disp);
+
+		pcl::visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGB> rgb(point_cloud_ptr);
+		viewer->updatePointCloud<pcl::PointXYZRGB> (point_cloud_ptr, rgb, "reconstruction");
+		viewer->spinOnce();
+   	
 		int k = waitKey(0);
 		if (k == 27) break;
 	}

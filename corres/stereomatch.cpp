@@ -37,7 +37,7 @@ Mat& StereoMatcher::getDisparity(Mat& img1, Mat& img2) {
 	return disp;
 }
 
-void StereoMatcher::reproject(Mat& disp, Mat& img) {
+void StereoMatcher::reproject(Mat& disp, Mat& img, pcl::PointCloud<pcl::PointXYZRGB>::Ptr& ptr) {
 	double px, py, pz, pw;
 	unsigned char pb, pg, pr;
 	for (int i=0;i<img.rows;i++) {
@@ -46,13 +46,13 @@ void StereoMatcher::reproject(Mat& disp, Mat& img) {
             int d = static_cast<unsigned>(disp(Rect(j, i, 1, 1)).at<uchar>(0));
             if (d==0) continue;
             double pw = -1.0*(double) (d)*_tx_inv + _cx_cx_tx_inv;
-            px = (double) j + _cx;
-            py = (double) j + _cy;
+            px = static_cast<double> (j) + _cx;
+            py = static_cast<double> (i) + _cy;
             pz = f;
 
-            px/=pw;
+            px/=pw; 
             py/=pw;
-            pz/=pw;
+            pz/=pw; pz*=-1; //pz inverted
 
             pb = rgb[3*j];
             pg = rgb[3*j+1];
@@ -60,7 +60,7 @@ void StereoMatcher::reproject(Mat& disp, Mat& img) {
 
             //verbose
             //cout << "i, j: " << i << " " << j << " x, y, z: " << px <<", "<<py<<", "<<pz<<"\n";
-            PointXYZRGB point;
+            pcl::PointXYZRGB point;
             point.x = px;
             point.y = py;
             point.z = pz;
@@ -68,10 +68,11 @@ void StereoMatcher::reproject(Mat& disp, Mat& img) {
             uint32_t _rgb = ((uint32_t) pr << 16 |
               (uint32_t) pg << 8 | (uint32_t)pb);
             point.rgb = *reinterpret_cast<float*>(&_rgb);
-            //point_cloud_ptr->points.push_back (point);
-        
+            ptr->push_back(point);
         }
     }
+    ptr->width = (int) ptr->points.size();
+    ptr->height = 1;
 }
 
 double StereoMatcher::getDepth(int startx, int starty, int endx, int endy) {

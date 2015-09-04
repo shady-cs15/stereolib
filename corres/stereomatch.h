@@ -7,7 +7,6 @@
 
 using namespace std;
 using namespace cv;
-using namespace pcl;
 
 class StereoMatcher {
 private:
@@ -20,6 +19,6 @@ private:
 public:
 	StereoMatcher();
 	Mat& getDisparity(Mat& img1, Mat& img2);
-	void reproject(Mat& disp, Mat& img);
+	void reproject(Mat& disp, Mat& img, pcl::PointCloud<pcl::PointXYZRGB>::Ptr& ptr);
 	double getDepth(int startx, int starty, int endx, int endy);
 };
