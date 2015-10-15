@@ -25,9 +25,6 @@ IF(OpenCV_FOUND)
 	TARGET_LINK_LIBRARIES(stereocalib ${OpenCV_LIBS})
 	ADD_EXECUTABLE(stereotest ${SOURCE_TEST})
 	TARGET_LINK_LIBRARIES(stereotest ${OpenCV_LIBS})
-	#additions
-	#ADD_EXECUTABLE(datatest test.cpp)
-	#TARGET_LINK_LIBRARIES(datatest ${OpenCV_LIBS})
 ENDIF()
 
 IF(PCL_FOUND)

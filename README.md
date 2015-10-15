@@ -5,9 +5,9 @@ Depth reconstruction using stereo vision
 # Requirements
 2 <b>USB Cameras</b> connected via USB.
 <br>
-<b>OpenCV</b> 
+<b>OpenCV 3.0.0</b> 
 <br>
-<b>PCL</b> (Optional: for stereomatch)
+<b>PCL 1.2</b> (Optional: for stereomatch)
 <br>
 <b>CMake</b>
 
