@@ -1,13 +1,14 @@
 #include "stereomatch.h"
 
-StereoMatcher::StereoMatcher() {
-	BMState.state->preFilterSize=41;
-	BMState.state->preFilterCap=31;
-	BMState.state->SADWindowSize=41;
-	BMState.state->minDisparity=-64;
-	BMState.state->numberOfDisparities=128;
-	BMState.state->textureThreshold=10;
-	BMState.state->uniquenessRatio=15;
+StereoBlockMatcher::StereoBlockMatcher() {
+	bm = StereoBM::create(128, 41);
+	bm->setPreFilterSize(41);
+	bm->setPreFilterCap(31);
+	bm->setBlockSize(41);
+	bm->setMinDisparity(64);
+	bm->setNumDisparities(128);
+	bm->setTextureThreshold(10);
+	bm->setUniquenessRatio(15);
 
 	FileStorage fs("stereorect.xml",FileStorage::READ);
 	fs["map1x"]>>map1x;
@@ -25,19 +26,19 @@ StereoMatcher::StereoMatcher() {
 	_cx_cx_tx_inv = Q.at<double>(3, 3);
 }
 
-Mat& StereoMatcher::getDisparity(Mat& img1, Mat& img2) {
+Mat& StereoBlockMatcher::getDisparity(Mat& img1, Mat& img2) {
 	remap(img1, img1, map1x, map1y, INTER_LINEAR, BORDER_CONSTANT, Scalar());
 	remap(img2, img2, map2x, map2y, INTER_LINEAR, BORDER_CONSTANT, Scalar());
 
 	cvtColor(img1, gray1, CV_BGR2GRAY);
 	cvtColor(img2, gray2, CV_BGR2GRAY);
 
-	BMState(gray1, gray2, disp);
+	bm->compute(gray1, gray2, disp);
 	normalize(disp, disp, 0, 255, CV_MINMAX, CV_8U);
 	return disp;
 }
 
-void StereoMatcher::reproject(Mat& disp, Mat& img, pcl::PointCloud<pcl::PointXYZRGB>::Ptr& ptr) {
+void StereoBlockMatcher::reproject(Mat& disp, Mat& img, pcl::PointCloud<pcl::PointXYZRGB>::Ptr& ptr) {
 	double px, py, pz, pw;
 	unsigned char pb, pg, pr;
 	for (int i=0;i<img.rows;i++) {
@@ -58,8 +59,6 @@ void StereoMatcher::reproject(Mat& disp, Mat& img, pcl::PointCloud<pcl::PointXYZ
             pg = rgb[3*j+1];
             pr = rgb[3*j+2];
 
-            //verbose
-            //cout << "i, j: " << i << " " << j << " x, y, z: " << px <<", "<<py<<", "<<pz<<"\n";
             pcl::PointXYZRGB point;
             point.x = px;
             point.y = py;
@@ -75,7 +74,7 @@ void StereoMatcher::reproject(Mat& disp, Mat& img, pcl::PointCloud<pcl::PointXYZ
     ptr->height = 1;
 }
 
-double StereoMatcher::getDepth(int startx, int starty, int endx, int endy) {
+double StereoBlockMatcher::getDepth(int startx, int starty, int endx, int endy) {
 	double sum = 0; int count = 0;
 	double sum_d = 0;
 	for (int i = startx; i<=endx; i++) {

@@ -1,6 +1,4 @@
 #include "./corres/stereomatch.h"
-#include <pcl/io/io.h>
-#include <pcl/visualization/cloud_viewer.h>
 #include <boost/thread/thread.hpp>
 
 #define FRAME_H 240
@@ -9,7 +7,7 @@
 int startx, starty, endx, endy;
 bool drawing = false;
 Mat disp, img1, img2;
-StereoMatcher* sm;
+StereoBlockMatcher* sm;
 
 static void onMouse(int event, int x, int y, int flags, void*);
 
@@ -39,7 +37,7 @@ int main(int argc, char** argv) {
 
 	namedWindow("disparity", CV_WINDOW_AUTOSIZE);
 	setMouseCallback("disparity", onMouse);
-	sm = new StereoMatcher();
+	sm = new StereoBlockMatcher();
 
 	pcl::PointCloud<pcl::PointXYZRGB>::Ptr point_cloud_ptr (new pcl::PointCloud<pcl::PointXYZRGB>);
 	boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer;
@@ -49,8 +47,7 @@ int main(int argc, char** argv) {
 		cap1 >> img1;
 		cap2 >> img2;
 		disp = sm -> getDisparity(img1, img2);
-		//dilate(disp, disp, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)));
-
+	
 		sm -> reproject(disp, img1, point_cloud_ptr);
 		cout << "PointCloud size: "<< point_cloud_ptr->size()<<"\n";
 		imshow("left", img1);
