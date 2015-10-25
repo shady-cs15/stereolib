@@ -54,7 +54,7 @@ void StereoCalibrator::calibrate() {
 	std::cout << "STATUS: Calibration started ..\n";
 	cv::stereoCalibrate(objPts, imgPts1, imgPts2, 
                     M1, D1, M2, D2, img1.size(), R, T, E, F,
-                    CV_CALIB_FIX_INTRINSIC,
+                    CV_CALIB_SAME_FOCAL_LENGTH | CV_CALIB_ZERO_TANGENT_DIST,
                     cv::TermCriteria(CV_TERMCRIT_ITER+CV_TERMCRIT_EPS, 100, 1e-5));
 	std::cout << "STATUS: Calibration done ..\n";
 	//testing

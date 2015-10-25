@@ -5,7 +5,7 @@ StereoBlockMatcher::StereoBlockMatcher() {
 	bm->setPreFilterSize(41);
 	bm->setPreFilterCap(31);
 	bm->setBlockSize(41);
-	bm->setMinDisparity(64);
+	bm->setMinDisparity(-64);
 	bm->setNumDisparities(128);
 	bm->setTextureThreshold(10);
 	bm->setUniquenessRatio(15);
@@ -24,6 +24,10 @@ StereoBlockMatcher::StereoBlockMatcher() {
 	f = Q.at<double>(2, 3);
 	_tx_inv = Q.at<double>(3, 2);
 	_cx_cx_tx_inv = Q.at<double>(3, 3);
+
+	//change values as required
+	disp8U = Mat(240, 320, CV_8UC1);
+	disp16S = Mat(240, 320, CV_16S);
 }
 
 Mat& StereoBlockMatcher::getDisparity(Mat& img1, Mat& img2) {
@@ -33,18 +37,21 @@ Mat& StereoBlockMatcher::getDisparity(Mat& img1, Mat& img2) {
 	cvtColor(img1, gray1, CV_BGR2GRAY);
 	cvtColor(img2, gray2, CV_BGR2GRAY);
 
-	bm->compute(gray1, gray2, disp);
-	normalize(disp, disp, 0, 255, CV_MINMAX, CV_8U);
-	return disp;
+	bm->compute(gray1, gray2, disp16S);
+	minMaxLoc(disp16S, &min_, &max_);
+	disp16S.convertTo(disp8U, CV_8UC1, 255/(max_ - min_));
+	//normalize(disp8U, disp8U, 0, 255, CV_MINMAX, CV_8UC1);
+
+	return disp8U;
 }
 
-void StereoBlockMatcher::reproject(Mat& disp, Mat& img, pcl::PointCloud<pcl::PointXYZRGB>::Ptr& ptr) {
+void StereoBlockMatcher::reproject(Mat& disp8U, Mat& img, pcl::PointCloud<pcl::PointXYZRGB>::Ptr& ptr) {
 	double px, py, pz, pw;
 	unsigned char pb, pg, pr;
 	for (int i=0;i<img.rows;i++) {
         uchar* rgb = img.ptr<uchar>(i);
         for (int j=0;j<img.cols;j++) {
-            int d = static_cast<unsigned>(disp(Rect(j, i, 1, 1)).at<uchar>(0));
+            int d = static_cast<unsigned>(disp8U(Rect(j, i, 1, 1)).at<uchar>(0));
             if (d==0) continue;
             double pw = -1.0*(double) (d)*_tx_inv + _cx_cx_tx_inv;
             px = static_cast<double> (j) + _cx;
@@ -79,7 +86,7 @@ double StereoBlockMatcher::getDepth(int startx, int starty, int endx, int endy) 
 	double sum_d = 0;
 	for (int i = startx; i<=endx; i++) {
 		for (int j = starty; j<=endy; j++) {
-			int d = static_cast<unsigned>(disp(Rect(i, j, 1, 1)).at<uchar>(0));
+			int d = static_cast<unsigned>(disp8U(Rect(i, j, 1, 1)).at<uchar>(0));
             if (d==0) continue;
             sum_d+=d;
             double pw = -1.0*(double)(d)*_tx_inv + _cx_cx_tx_inv; 

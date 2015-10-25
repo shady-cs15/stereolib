@@ -14,9 +14,10 @@ using namespace cuda;
 class StereoBlockMatcher {
 private:
 	Ptr<StereoBM> bm;
+	double min_, max_;
 	Mat map1x, map2x, map1y, map2y, Q;
 	Mat gray1, gray2;
-	Mat disp;
+	Mat disp16S, disp8U;
 	double _cx, _cy, f, _tx_inv, _cx_cx_tx_inv;
 
 public:
