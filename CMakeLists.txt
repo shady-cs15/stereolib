@@ -1,8 +1,10 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 PROJECT(StereoVisionLibrary)
 
-FIND_PACKAGE(OpenCV REQUIRED)
+FIND_PACKAGE(OpenCV 3.0 REQUIRED)
 FIND_PACKAGE(PCL 1.2 QUIET)
+
+include_directories(/usr/local/include)
 
 IF(OpenCV_FOUND)
 	MESSAGE(STATUS "OpenCV Found")
