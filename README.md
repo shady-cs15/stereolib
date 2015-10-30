@@ -47,4 +47,5 @@ Following are examples of disparity maps generated from stereo views
 <img src="http://jderobot.org/store/chakraborty/uploads/images/disp2.png" />
 <br>
 Demo video showing Depth reconstruction on the Karlsruhe stereo vision dataset can be found <a href="https://www.youtube.com/watch?v=dCIJjDzQBHE"> here</a>.
-<img src="https://drive.google.com/open?id=0Bx0p5rG_JfHgU3V2cFAxdFM5aDQ" />
+<img src="https://j.gifs.com/vMzxDb.gif" />
+<img src="https://j.gifs.com/vJnV88.gif" />
